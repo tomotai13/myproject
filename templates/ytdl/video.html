@@ -1,7 +1,8 @@
 
 <p class="title">{{ video_title }}</p>
 
-<video src="{{ video_url }}" controls autoplay muted playsinline id="video">
+<video controls autoplay muted playsinline id="video">
+    <source src="{{ video_url }}">
 このブラウザでは再生できません
 </video>
 <p><a href="{{ video_url }}" download="{{ video_title_ext }}" id="download">動画をダウンロード</a></p>

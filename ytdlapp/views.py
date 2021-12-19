@@ -42,5 +42,21 @@ def helloworld(request):
             context['message'] = 'エラーが発生しました'
 
     return render(request, 'ytdl/ytdl.html', context)
-    
 
+
+def videoTest(request):
+    context={'form': UrlForm(),'video_Id':'', 'message':'','hoge':'',}  
+    if request.method == 'POST':
+        try:
+            url = request.POST.get('url')
+            testUrl = url[0:33]
+            if 'https://www.youtube.com/watch?v=' in testUrl or 'https://m.youtube.com/watch?v=' in testUrl:
+                videoId = url.split('watch?v=')[1]
+                context['video_Id'] = videoId
+                context['hoge'] = 'ok'
+            else:
+                context['message'] = '正しいURLを入力してください'
+        except:
+            context['message'] = 'エラーが発生しました'
+    
+    return render(request, 'ytdl/ytdl2.html', context)
