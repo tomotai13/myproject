@@ -1,6 +1,7 @@
 
 from pathlib import Path
 import os
+import logging
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -118,3 +119,32 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters':{
+        'file_formatter':{
+            'format' : "[%(asctime)s] [%(levelname)s]: %(message)s",
+        },
+    },
+    'handlers': {
+        'file': {   # ログのローテーションの設定
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join('logfile', 'debug.log'),
+            'maxBytes': 10000,
+            'backupCount':5,
+            'formatter':'file_formatter',
+            'encoding':'utf8',
+        },
+    },
+    'loggers': {
+        'ytdlapp': {
+            'handlers': ['file',],
+            'level': 'DEBUG',
+            'propagate': False,
+        }
+    },
+}

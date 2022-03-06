@@ -1,0 +1,65 @@
+{% extends 'ytdl/base.html' %}
+
+
+{% load static %}
+{% block title %}わっきーダウンローダー{% endblock title %}
+
+{% block css %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+{% endblock css %}
+
+{% block js %}{% endblock js %}
+
+
+{% block content %}
+
+<div class="main">
+
+    <h1> ダウンローダー </h1>
+    <form id="ajax-number" action="{% url 'youtube:pytube'%}" method="post">
+
+    {% csrf_token %}
+    <div class="mb-3">{{ form }}</div>
+    <button type="reset" class="button">リセット</button>
+    <button type="button" class="button" id="button">ダウンロード</button>
+    <button type="submit" id="send" hidden></button>
+
+    </form>
+    <!--<h3 style="color:red;">システムエラー</h3>-->
+    <p style="color:#ff7f50; font-size:1.5rem;">ログを保存する処理を削除しました　サーバーに情報は保存されません</p>
+    {% if not video %}
+        <!--<p>"https://www.youtube.com/watch/v={動画ID}"か、"https://youtu.be/{動画ID}"、または動画IDを入力してください<br>-->
+        <p>長いURLに対応しました！直接URLを貼り付けても大丈夫です!<br>ボタンが反応しない場合はサイトをリロードしてください</p>
+       <!-- <p>動画IDの取り方...   「https://www.google.co.jp/url?sa=t&rct=j&q=&esrc=s&source=video&<br>cd=&ved=(省略)https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3D<span style="color: red;">CBFJvSgO7yw</span>&usg=(省略)」<br>
+        のようにURLが長い場合、%3Dと&usg=に挟まれている赤い部分がIDになります</p>
+        h4 style="color: red;">1月26日22時5分現在、正常に動作することを確認しました<br>大変ご迷惑おかけいたしました</h4>-->
+    {% endif %}
+
+    {{ message }}
+
+    <div class="result">
+        {% if video %}
+
+           <p class="title">{{ title }}</p>
+           <video src="{{ video }}" controls autoplay muted playsinline style="width: 56vw;"></video>
+           <p><a href="{{ video }}" download="example.mp4">ダウンロード</a></p>
+           <p>※通信状況やサーバー側の状況によっては動画の受信ができなくなる可能性があります<br>違法動画のダウンロードはお控えください</p>
+
+        {% endif %}
+    </div>
+
+</div>
+<script>
+    $('#button').on('click', function() {
+        //const url = $("#url").val();
+        //if url.length !== 0 {
+       	$("#send").click();
+       	$("#button").attr('disabled', true);
+        //};
+    });
+</script>
+
+
+{% endblock content %}
+
+{% block jsfile %} {% endblock jsfile %}
