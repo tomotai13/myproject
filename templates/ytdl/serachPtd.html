@@ -18,14 +18,14 @@
 
     <input type="text" minlength="1" v-model="keyword">
 
-    <button type="button" class="button" id="send" @click="send">ダウンロードする</button>
+    <button type="button" class="button" id="send" v-bind:disabled="isClick" @click="send">ダウンロードする</button>
     <p v-show="!isClick">こちらのサイトは検索に対応しています</p>
     <h4 id="message" v-show="isClick">
         <div class="spinner-border text-primary" role="status">
             <span class="visually-hidden">Loading...</span>
         </div>動画を取得中
     </h4>
-    <p>下に結果が表示されます<br>何度も画像をタップしないでください。裏では通信が行われており、何度もタップしてしまうことでその通信を阻害してしまいます。</p>
+    <p>下に結果が表示されます<br>何度も画像をタップしないでください。裏では通信が行わ""れており、何度もタップしてしまうことでその通信を阻害してしまいます。</p>
     <details open>
         <summary>
             <span class="open">クリックで表示</span>
@@ -33,17 +33,34 @@
         </summary>
     <div class="contents" id="return">
         <div class="item" v-for="video in videos" :key="video.id">
-            <img class="img"  v-bind:id="[[ video.video_id ]]" v-bind:src="[[ video.thumbnail_url ]]" @click="images">
-            <p v-show="!isClick">[[ video.title ]]</p><p v-show="isClick">Loding...</p>
-    </div>
+            <img class="img"  v-bind:id="[[ video.video_id ]]" v-bind:src="[[ video.thumbnail_url ]]" @click="images($event)">
+            <p v-show="!isClick" class="text-hidden-two">[[ video.title ]]</p>
+            <p v-show="isClick">Loading...</p>
+        </div>
     </div>
     </details>
+
+    <details open>
+      <summary>
+          <span class="open">クリックで表示</span>
+          <span class="close">クリックで非表示</span>
+      </summary>
+  <div class="contents" id="return-channel">
+      <div class="item" v-for="chVideo in chVideos" :key="chVideo.id">
+          <img class="img"  v-bind:id="[[ chVideo.video_id ]]" v-bind:src="[[ chVideo.thumbnail_url ]]" @click="images($event)">
+          <p class="text-hidden-two" v-show="!isClick">[[ chVideo.title ]]</p>
+          <p v-show="isClick">Loading...</p>
+      </div>
+  </div>
+  </details>
+
     <div id="stream" v-for="stream in streams">
+      <p><button v-bind:id="[[ stream.channel_id ]]" @click="channelSend($event)" v-bind:disabled="isChClick">[[ stream.author ]]の動画を取得する <span v-show="isChClick"> Loading...</span></button></p>
         <video v-bind:src="[[ stream.stream_url ]]" controls autolay muted playsinline style="width: 56vw;"></video>
     </div>
+
 </div>
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
@@ -54,8 +71,10 @@ let vm = new Vue({
     el:"#app",
     data:{
       isClick:false,
+      isChClick:false,
       keyword:"",
       videos:[],
+      chVideos:[],
       streams:[],
     },
 
@@ -83,7 +102,7 @@ let vm = new Vue({
 
       images: function(event) {
         this.isClick = true;
-        const id = event.path[0].id;
+        const id = event.target.id;
         csrftoken = Cookies.get('csrftoken');
         headers = {'X-CSRFToken': csrftoken};
         data = {
@@ -99,7 +118,27 @@ let vm = new Vue({
         .catch(function (error) {
           alert(error);
         });
+    },
+    channelSend: function(event){
+      id = event.target.id
+      this.isChClick = true;
+      data = {
+          channel_id: id,
+      };
+      axios.post("{% url 'youtube:ajax_ch_search' %}", data)
+        .then(response => {
+          this.chVideos.splice(0, this.chVideos.length)
+          d = JSON.parse(response.data);
+          this.isChClick = false;
+          for (let i = 0; i < d.length; i++) {
+              this.chVideos.push(d[i])
+       }
+        })
+        .catch(function (error) {
+          alert(error);
+        });
     }
+
     }
   });
 </script>

@@ -6,7 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 #from third party
 import youtube_dl
-from pytube import YouTube, Search
+from pytube import YouTube, Search, Channel
 
 #from other file
 from .forms import UrlForm
@@ -116,7 +116,6 @@ def ajax_search(request):
             dict_data = {}
             d = []
             for r in s.results:
-                #dict_data['thumbnail_url'] = r.thumbnail_url
                 dict_data['video_id'] = r.video_id
                 dict_data['thumbnail_url'] = 'https://i.ytimg.com/vi/' + r.video_id + '/mqdefault.jpg'
                 dict_data['title'] = r.title
@@ -126,7 +125,6 @@ def ajax_search(request):
             d.append('error')
         else:
             logger.info(query)
-
         d = json.dumps(d, ensure_ascii=False)
 
         return JsonResponse(d, safe=False)
@@ -143,15 +141,16 @@ def ajax_stream(request):
             url = 'https://www.youtube.com/watch?v={}'.format(id)
 
         if 'https' in url or 'youtu' in url:
+            yt_obj = YouTube(url)
+            d['channel_id'] = yt_obj.channel_id
+            d['author'] = yt_obj.author
             try:
                 try:
-                    streams = YouTube(url).streams
-                    stream = streams.get_by_itag(22)
+                    stream = yt_obj.streams.get_by_itag(22)
                     d['stream_url'] = stream.url
                     d['stream_title'] = stream.title
                 except:
-                    streams = YouTube(url).streams
-                    stream = streams.get_by_itag(18)
+                    stream = yt_obj.streams.get_by_itag(18)
                     d['stream_url'] = stream.url
                     d['stream_title'] = stream.title
             except:
@@ -166,3 +165,23 @@ def ajax_stream(request):
         return JsonResponse(d, safe=False)
 
 
+@csrf_exempt
+def ajax_ch_search(request):
+
+    if request.method == 'POST' and request.body:
+        try:
+            json_dict = json.loads(request.body)
+            ch_id = json_dict['channel_id']
+            ch_url = 'https://www.youtube.com/channel/'+ch_id
+            c = Channel(ch_url)
+            dict_data = {}
+            d = []
+            for r in c.videos[:20]:
+                dict_data['video_id'] = r.video_id
+                dict_data['thumbnail_url'] = 'https://i.ytimg.com/vi/' + r.video_id + '/mqdefault.jpg'
+                dict_data['title'] = r.title
+                d.append(dict_data.copy())
+        except:
+            d.append('error')
+        d = json.dumps(d, ensure_ascii=False)
+        return JsonResponse(d, safe=False)
